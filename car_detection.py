@@ -14,13 +14,13 @@ import datetime #used for fomatting timestamps
 
 
 # capture video/ video path
-cap = cv2.VideoCapture('20090-307115630_small.mp4') #name of video you want to look at
+cap = cv2.VideoCapture('media/20090-307115630_small.mp4') #name of video you want to look at
 
 #get fps of video used to calculate timestamp
 fps = cap.get(cv2.CAP_PROP_FPS)
 
 #use trained cars XML classifiers
-car_cascade = cv2.CascadeClassifier('haarcascade_cars.xml')
+car_cascade = cv2.CascadeClassifier('models/haarcascade_cars.xml')
 
 
 #read until video is completed
