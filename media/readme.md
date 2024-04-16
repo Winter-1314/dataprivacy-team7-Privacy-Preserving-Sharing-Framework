@@ -1,1 +1,0 @@
-# Images without applying filters.
