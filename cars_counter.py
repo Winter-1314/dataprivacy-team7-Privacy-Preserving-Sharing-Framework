@@ -1,6 +1,7 @@
 # importing libraries
-import cv2
+
 import numpy as np
+import cv2
 
 # capturing or reading video
 #cap = cv2.VideoCapture(0)
