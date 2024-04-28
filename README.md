@@ -23,3 +23,5 @@ Built with python3 and opencv
 
 
         pip install opencv-python 
+        pip install torch 
+        pip install numpy
