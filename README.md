@@ -1,5 +1,7 @@
 trimmer.py is the project file 
 
+    Reconmended 16+gb RAM and a few cores 
+
     commands to run code
     python3 trimmer.py footage.mp4 color endtimestamp 
 
@@ -15,6 +17,7 @@ trimmer.py is the project file
 car_detection.py and cars_counter.py are references from another project 
 
 
+analysis.jpg is the current frame the model is viewing
 
 Built with python3 and opencv 
 
