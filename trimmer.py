@@ -3,9 +3,23 @@ import os
 import cv2
 import datetime #used for formatting timestamps
 
+import torch
+from fastsam import FastSAM, FastSAMPrompt
+
 inital_model = cv2.CascadeClassifier('models/haarcascade_cars.xml')
 
 
+DEVICE = torch.device(
+    "cuda"
+    if torch.cuda.is_available()
+    else "mps"
+    if torch.backends.mps.is_available()
+    else "cpu"
+)
+FastSAM_model = FastSAM('.weights/FastSAM-s.pt')
+
+
+#currently saves to images, needs to combine to files 
 def frames_to_video(frames, path, fps):
     path = path.split("/")
     path = "output/" + path[1] + "/"
@@ -59,8 +73,8 @@ def trim_footage(file_name, color, interval):
         actual_timestamp = datetime.datetime(1960,1,1,0,0,0,0)
 
         while cap.isOpened() and actual_timestamp < end_timestamp:
-            ret, frame = cap.read()
-            if(ret):#if frames 
+            success, frame = cap.read()
+            if(success):#if frames 
                 gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
                 #scale must be > 1, and lower scaling leads to more false positives 
                 cars = inital_model.detectMultiScale(gray, 1.1, 3)#frame, scale, neighbor
@@ -77,14 +91,25 @@ def trim_footage(file_name, color, interval):
                 actual_timestamp = start_timestamp + datetime.timedelta(seconds=timestamp_sec)
                 formatted_timestamp = actual_timestamp.strftime("%Y-%m-%d %H:%M:%S.%f")
                 print("Actual Timestamp::", formatted_timestamp)
-                
-                
+
                 if(len(cars) != 0):
                     #cars detected, pass to next model with key words
+                    keywords = color + "cars in the photo"
 
-                    if(True):
+                    DEVICE = 'cpu'
+                    everything_results = FastSAM_model(frame,
+                                        device=DEVICE,
+                                        retina_masks=True,
+                                        imgsz=(640,480),
+                                        conf=0.4,
+                                        iou=0.9)
+                    prompt_process = FastSAMPrompt(frame, everything_results, device=DEVICE)
+                    ann = prompt_process.text_prompt(text=keywords)
+                    #prints the blots around "cars" stored in ann, kept to generate reference photos for presentaiton 
+                    prompt_process.plot(annotations=ann,output_path='analysis.jpg',)
+                    if(ann.any()):
                         saved_frames.append(frame)
-                        #save to file, append to video?
+                        print("saving frame")
                         
             else:
                 print("Trimming complete")
@@ -92,7 +117,10 @@ def trim_footage(file_name, color, interval):
             
             #write frames to file   
         if(len(saved_frames) > 1):
+            ################################################################################################################################################            
             frames_to_video(saved_frames, file_name, fps)
+
+            cap.release()
 
     else:
         print("no media file")
