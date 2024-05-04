@@ -19,8 +19,8 @@ DEVICE = torch.device(
 FastSAM_model = FastSAM('.weights/FastSAM-s.pt')
 
 
-#currently saves to images, needs to combine to files 
-def frames_to_video(frames, path, fps):
+#saves frames to images stored in output/filename 
+def frames_to_images(frames, path, fps):
     path = path.split("/")
     path = "output/" + path[1] + "/"
     os.makedirs(path, exist_ok=True)
@@ -40,7 +40,7 @@ def trim_footage(file_name, color, interval):
         fps = cap.get(cv2.CAP_PROP_FPS) # get fps of frames
         saved_frames = [] #list of frames ided by models 
 
-        #format input from command line for time stamp
+        #####formatting for timestamps#####
         for i in range(2):
             if i == 0:
                 start_timestamp = sys.argv[1]
@@ -69,7 +69,9 @@ def trim_footage(file_name, color, interval):
             else:
                 print("invalid timestamp format")
 
-        #initilize timestamp to basically zero for comparisons
+
+
+        #initilize timestamp to zero equivalent for comparison
         actual_timestamp = datetime.datetime(1960,1,1,0,0,0,0)
 
         while cap.isOpened() and actual_timestamp < end_timestamp:
@@ -78,9 +80,6 @@ def trim_footage(file_name, color, interval):
                 gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
                 #scale must be > 1, and lower scaling leads to more false positives 
                 cars = inital_model.detectMultiScale(gray, 1.1, 3)#frame, scale, neighbor
-
-
-                ####### another option for calculating time stamps########
                 
                 # #for calculating time stamp
                 timestamp_msec = cap.get(cv2.CAP_PROP_POS_MSEC)
@@ -90,7 +89,7 @@ def trim_footage(file_name, color, interval):
                 # provided by argv[1] and argv[3] above into vars start_timestamp and stop_timestamp
                 actual_timestamp = start_timestamp + datetime.timedelta(seconds=timestamp_sec)
                 formatted_timestamp = actual_timestamp.strftime("%Y-%m-%d %H:%M:%S.%f")
-                print("Actual Timestamp::", formatted_timestamp)
+                print("At Timestamp::", formatted_timestamp)
 
                 if(len(cars) != 0):
                     #cars detected, pass to next model with key words
@@ -109,27 +108,80 @@ def trim_footage(file_name, color, interval):
                     prompt_process.plot(annotations=ann,output_path='analysis.jpg',)
                     if(ann.any()):
                         saved_frames.append(frame)
-                        print("saving frame")
+                        print("\nsaving image")
                         
             else:
-                print("Trimming complete")
+                print("Video trimming has completed sucessfully")
                 cap.release()
-            
-            #write frames to file   
+
+        #write frames to file   
         if(len(saved_frames) > 1):
             ################################################################################################################################################            
-            frames_to_video(saved_frames, file_name, fps)
+            frames_to_images(saved_frames, file_name, fps)
 
+
+
+            cv2.namedWindow("Video", cv2.WINDOW_NORMAL)
+            for frame in saved_frames:
+                # Display the frame
+                cv2.imshow("Video", frame)
+
+                # Simulate delay for video playback (adjust delay as needed)
+                key = cv2.waitKey(1)  # Wait for 1 millisecond (adjust for desired frame rate) 
+
+                # Exit on 'q' key press
+                if key == ord('q'):
+                    break
+
+            # Close the window
+            cv2.destroyAllWindows()
+
+
+
+            frames_to_video(saved_frames)
+            
             cap.release()
 
     else:
         print("no media file")
 
+
+#takes images from output file and converts them to a video format to provide both frames and video
+def frames_to_video(frames):
+    
+
+
+    # Set video frame size (adjust based on your images)
+    frame_width = frames[0].shape[1]  # Get width from the first frame
+    frame_height = frames[0].shape[0]  # Get height from the first frame
+
+
+    size = (frame_width, frame_height) 
+   
+    # Below VideoWriter object will create 
+    # a frame of above defined The output  
+    # is stored in 'filename.avi' file. 
+    video_writer = cv2.VideoWriter('result_video.avi',  cv2.VideoWriter_fourcc(*'MJPG'), 10, size) 
+
+    # Write each frame to the video
+    for i, frame in enumerate(frames):
+        # Convert frame to BGR format if needed (depending on your array format)
+        if frame.ndim == 3 and frame.shape[-1] == 4:  # Check for RGBA format
+            frame = cv2.cvtColor(frame, cv2.COLOR_RGBA2BGR)
+
+        video_writer.write(frame)   
+
+    # Release video writer
+    video_writer.release()
+
+
+
 if __name__ == "__main__":
     if len(sys.argv) == 4:
         path = "media/" + sys.argv[1]
         print(path)
-        trim_footage(path,sys.argv[2], sys.argv[3]  )
+        trim_footage(path,sys.argv[2], sys.argv[3])
+        # frames_to_video(path)
     else:
         print("using preset")
         trim_footage("media/deliveryDriver.mp4", "red", "timestamps"  )
