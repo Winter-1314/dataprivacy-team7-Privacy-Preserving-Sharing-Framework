@@ -1,5 +1,5 @@
 # Ignore Python bytecode files
-fastsam/__pycache__/*.cpython-312.pyc
+fastsam/__pycache__/
 
 # Ignore analysis.jpg
 analysis.jpg
