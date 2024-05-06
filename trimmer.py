@@ -6,7 +6,7 @@ import datetime #used for formatting timestamps
 import torch
 from fastsam import FastSAM, FastSAMPrompt
 
-inital_model = cv2.CascadeClassifier('models/haarcascade_cars.xml')
+inital_model = cv2.CascadeClassifier('.weights/haarcascade_cars.xml')
 
 
 DEVICE = torch.device(
