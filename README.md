@@ -14,12 +14,10 @@ trimmer.py is the project file
         -this example input will return all frames between the start and stop timestamp with cars that are red
 
 
-car_detection.py and cars_counter.py are references from another project 
-
-
 analysis.jpg is the current frame the model is viewing
 
 Built with python3 and opencv 
+If error occur try the pips below and if they continue consult the FastSAM setup guide
 
 
         pip install opencv-python 
