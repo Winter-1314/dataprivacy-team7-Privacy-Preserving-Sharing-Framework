@@ -23,3 +23,7 @@ If error occur try the pips below and if they continue consult the FastSAM setup
         pip install opencv-python 
         pip install torch 
         pip install numpy
+
+Pre-traine models from:
+https://github.com/jitendrasb24/Car-Detection-OpenCV
+https://github.com/CASIA-IVA-Lab/FastSAM
